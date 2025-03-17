@@ -1,4 +1,4 @@
-# WebIDEforHTML
+# Web IDE for HTML
 A simple Web IDE for Programming with HTML, CSS and JS. It supports a Code Editor, a Javascript Console and a live Preview of the Page.
 
 Everything is saved in the localStorage of your Browser.
