@@ -1,0 +1,230 @@
+/* Global Styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #000;
+    color: #eee;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Top Toolbar */
+#toolbar {
+    background: #222;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Bottom Toolbar */
+#bottomToolbar {
+    background: #222;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    z-index: 1002;
+}
+
+/* Toolbar Buttons & Panel Buttons */
+#toolbar button, #bottomToolbar button, .panel-buttons button {
+    background: #333;
+    color: #eee;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+#toolbar button:hover, #bottomToolbar button:hover, .panel-buttons button:hover {
+    background: #444;
+}
+
+/* Hide file input */
+#toolbar input[type="file"] {
+    display: none;
+}
+
+/* Main Container */
+#container {
+    display: flex;
+    height: calc(100% - 100px); /* Accounts for top toolbar and bottom toolbar height */
+}
+
+/* Editor and Preview Panes */
+#editorPane, #previewPane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid #333;
+    transition: flex 0.3s ease;
+}
+
+/* Separator between panes */
+#editorPane {
+    border-right: 1px solid #333;
+}
+
+/* Headers for each pane */
+#editorHeader, #previewHeader {
+    background: #222;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Tabs (File Navigation) */
+#tabs {
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+}
+.tab {
+    background: #333;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.tab.active {
+    background: #444;
+}
+.tab.dragging {
+    opacity: 0.5;
+}
+.tab.dragover {
+    border: 2px dashed #eee;
+}
+.export-btn, .delete-btn {
+    margin-left: 5px;
+    font-size: 0.8em;
+    cursor: pointer;
+    background: #555;
+    color: #eee;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.export-btn:hover, .delete-btn:hover {
+    background: #666;
+}
+.delete-btn {
+    background: #c00;
+}
+
+/* Editor Container with Line Numbers */
+#editorContainer {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+#lineNumbers {
+    background: #111;
+    padding: 8px;
+    text-align: right;
+    user-select: none;
+    border-right: 1px solid #333;
+    width: 50px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 1.4em;
+}
+#codeEditor {
+    flex: 1;
+    background: #111;
+    border: none;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    color: #eee;
+    resize: none;
+    outline: none;
+    line-height: 1.4em;
+}
+
+/* Preview Pane */
+/* The preview iframe remains standard white; only the header is styled */
+#previewPane {
+    background: #fff;
+}
+#previewHeader {
+    background: #222;
+}
+#previewHeader span {
+    color: #eee;
+    font-weight: bold;
+}
+#previewFrame {
+    flex: 1;
+    border: none;
+}
+
+/* Console Panel with fixed height (1/3 of viewport) and slide animation */
+#consolePanel {
+    position: fixed;
+    bottom: 50px; /* Placed flush above the bottom toolbar */
+    left: 0;
+    width: 100%;
+    height: 33.33vh;
+    background: #111;
+    color: #eee;
+    border-top: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+    z-index: 1001;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: translateY(0);
+    opacity: 1;
+}
+#consolePanel.hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+}
+#consoleHeader {
+    background: #222;
+    padding: 8px 12px;
+}
+#consoleOutput {
+    flex: 1;
+    padding: 8px 12px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+/* Drop Overlay for Drag-and-Drop File Import */
+#dropOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1003;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+#dropOverlay.active {
+    pointer-events: all;
+    opacity: 1;
+}

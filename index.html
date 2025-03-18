@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Web Studio IDE</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Top toolbar with file actions -->
+  <div id="toolbar">
+    <button id="newFileBtn">New File</button>
+    <button id="importBtn">Import Files</button>
+    <button id="exportAllBtn">Export All (ZIP)</button>
+    <input type="file" id="importInput" multiple>
+  </div>
+  
+  <!-- Main container with two panes -->
+  <div id="container">
+    <!-- Left side: Code Editor -->
+    <div id="editorPane">
+      <div id="editorHeader">
+        <div id="tabs"></div>
+        <div class="panel-buttons">
+          <button id="maximizeLeftBtn">Maximize Editor</button>
+        </div>
+      </div>
+      <div id="editorContainer">
+        <div id="lineNumbers">1</div>
+        <textarea id="codeEditor" spellcheck="false"></textarea>
+      </div>
+    </div>
+    <!-- Right side: Live Preview (remains standard white) -->
+    <div id="previewPane">
+      <div id="previewHeader">
+        <span>Live Preview</span>
+        <div class="panel-buttons">
+          <button id="refreshPreviewBtn">Refresh Preview</button>
+          <button id="maximizeRightBtn">Maximize Preview</button>
+        </div>
+      </div>
+      <iframe id="previewFrame"></iframe>
+    </div>
+  </div>
+  
+  <!-- Console Panel -->
+  <div id="consolePanel" class="hidden">
+    <div id="consoleHeader">
+      <span>Console Output</span>
+    </div>
+    <div id="consoleOutput"></div>
+  </div>
+  
+  <!-- Bottom Toolbar for Console Controls -->
+  <div id="bottomToolbar">
+    <button id="toggleConsoleBtn">Show Console</button>
+    <button id="clearConsoleBtn">Clear Console</button>
+  </div>
+  
+  <!-- Drop Overlay for Drag-and-Drop File Import -->
+  <div id="dropOverlay" class="hidden">
+    <span>Drop files here to import</span>
+  </div>
+  
+  <!-- Include JSZip from CDN for exporting ZIP files -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <!-- Main script -->
+  <script src="script.js"></script>
+</body>
+</html>
