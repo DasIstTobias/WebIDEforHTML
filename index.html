@@ -29,7 +29,7 @@
         <textarea id="codeEditor" spellcheck="false"></textarea>
       </div>
     </div>
-    <!-- Right side: Live Preview (remains standard white) -->
+    <!-- Right side: Live Preview -->
     <div id="previewPane">
       <div id="previewHeader">
         <span>Live Preview</span>
@@ -59,6 +59,66 @@
   <!-- Drop Overlay for Drag-and-Drop File Import -->
   <div id="dropOverlay" class="hidden">
     <span>Drop files here to import</span>
+  </div>
+  
+  <!-- Rename Modal -->
+  <div id="renameModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Rename File</h2>
+      <input type="text" id="renameInput" placeholder="Enter new file name">
+      <div class="modal-actions">
+        <button id="renameCancelBtn" class="modal-btn">Cancel</button>
+        <button id="renameSaveBtn" class="modal-btn">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Delete File</h2>
+      <p id="deleteModalMessage">Are you sure you want to delete this file?</p>
+      <div class="modal-actions">
+        <button id="deleteCancelBtn" class="modal-btn">No</button>
+        <button id="deleteConfirmBtn" class="modal-btn">Yes</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Create File Modal -->
+  <div id="createFileModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Create File</h2>
+      <input type="text" id="createFileInput" placeholder="Enter new file name (with extension)">
+      <div class="modal-actions">
+        <button id="createFileCancelBtn" class="modal-btn">Cancel</button>
+        <button id="createFileConfirmBtn" class="modal-btn">Create</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Download File Modal -->
+  <div id="downloadModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Download File</h2>
+      <input type="text" id="downloadInput" placeholder="Enter file name for download">
+      <div class="modal-actions">
+        <button id="downloadCancelBtn" class="modal-btn">Cancel</button>
+        <button id="downloadConfirmBtn" class="modal-btn">Download</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Export ZIP Modal -->
+  <div id="zipModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Export Project</h2>
+      <input type="text" id="zipInput" placeholder="Enter name for the ZIP file" value="project.zip">
+      <div class="modal-actions">
+        <button id="zipCancelBtn" class="modal-btn">Cancel</button>
+        <button id="zipConfirmBtn" class="modal-btn">Export</button>
+      </div>
+    </div>
   </div>
   
   <!-- Include JSZip from CDN for exporting ZIP files -->
