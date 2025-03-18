@@ -7,6 +7,7 @@ let dropCounter = 0;
 let currentFileToRename = null;
 let currentFileToDelete = null;
 let currentFileToDownload = null;
+let editor; // CodeMirror editor instance
 
 /* Initialization: load from localStorage or create defaults */
 function init() {
@@ -52,6 +53,32 @@ function init() {
   } else {
     fileOrder = Object.keys(files);
   }
+  
+  // Initialize CodeMirror on the textarea
+  editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+    lineNumbers: true,
+    mode: "htmlmixed",
+    theme: "dracula", // You can change or remove the theme if desired
+    indentUnit: 2,
+    tabSize: 2,
+    autoIndent: true
+  });
+  
+  // Ensure CodeMirror fills its container
+  editor.setSize("100%", "100%");
+  
+  // Update file on change
+  editor.on('change', function(cm, change) {
+    if (activeFile in files) {
+      files[activeFile].content = editor.getValue();
+      saveFiles();
+      // Update preview for primary files
+      if (activeFile === 'index.html' || activeFile === 'style.css' || activeFile === 'script.js') {
+        updatePreview();
+      }
+    }
+  });
+  
   updateTabs();
   loadFile(activeFile);
   updatePreview();
@@ -194,49 +221,25 @@ document.addEventListener('click', function(e) {
   });
 });
 
-/* Load file content into the editor */
+/* Load file content into the CodeMirror editor */
 function loadFile(fileName) {
   const file = files[fileName];
-  const codeEditor = document.getElementById('codeEditor');
-  codeEditor.value = file.content;
-  updateLineNumbers();
+  editor.setValue(file.content);
+  // Update CodeMirror mode based on file extension
+  let mode = "text/plain";
+  if (fileName.endsWith(".html")) mode = "htmlmixed";
+  else if (fileName.endsWith(".css")) mode = "css";
+  else if (fileName.endsWith(".js")) mode = "javascript";
+  editor.setOption("mode", mode);
 }
 
 /* Save the current file content */
 function saveCurrentFile() {
-  const codeEditor = document.getElementById('codeEditor');
   if (activeFile in files) {
-    files[activeFile].content = codeEditor.value;
+    files[activeFile].content = editor.getValue();
     saveFiles();
   }
 }
-
-/* Update line numbers based on the code editor */
-function updateLineNumbers() {
-  const codeEditor = document.getElementById('codeEditor');
-  const lineNumbers = document.getElementById('lineNumbers');
-  const lines = codeEditor.value.split("\n").length;
-  let numbersHtml = "";
-  for (let i = 1; i <= lines; i++) {
-    numbersHtml += i + "<br>";
-  }
-  lineNumbers.innerHTML = numbersHtml;
-}
-
-/* Editor events */
-document.getElementById('codeEditor').addEventListener('input', function() {
-  updateLineNumbers();
-  if (activeFile in files) {
-    files[activeFile].content = this.value;
-    saveFiles();
-    if (activeFile === 'index.html' || activeFile === 'style.css' || activeFile === 'script.js') {
-      updatePreview();
-    }
-  }
-});
-document.getElementById('codeEditor').addEventListener('scroll', function() {
-  document.getElementById('lineNumbers').scrollTop = this.scrollTop;
-});
 
 /* Update the live preview iframe */
 function updatePreview() {
@@ -562,6 +565,7 @@ window.addEventListener('message', function(event) {
 });
 
 /* Drag-and-Drop File Import */
+// When a file is dragged into the document, increase the counter and show overlay
 document.addEventListener('dragenter', function(e) {
   e.preventDefault();
   dropCounter++;
@@ -569,18 +573,26 @@ document.addEventListener('dragenter', function(e) {
   dropOverlay.classList.remove('hidden');
   dropOverlay.classList.add('active');
 });
+
+// Prevent default dragover behavior
 document.addEventListener('dragover', function(e) {
   e.preventDefault();
 });
+
+// Use a small timeout on dragleave so that the overlay is not hidden prematurely
 document.addEventListener('dragleave', function(e) {
   dropCounter--;
-  if (dropCounter <= 0) {
-    let dropOverlay = document.getElementById('dropOverlay');
-    dropOverlay.classList.remove('active');
-    dropOverlay.classList.add('hidden');
-    dropCounter = 0;
-  }
+  setTimeout(() => {
+    if (dropCounter <= 0) {
+      dropCounter = 0;
+      let dropOverlay = document.getElementById('dropOverlay');
+      dropOverlay.classList.remove('active');
+      dropOverlay.classList.add('hidden');
+    }
+  }, 50);
 });
+
+// On drop, reset counter and hide overlay, then process files
 document.addEventListener('drop', function(e) {
   e.preventDefault();
   dropCounter = 0;
