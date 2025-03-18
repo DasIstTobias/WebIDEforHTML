@@ -133,42 +133,20 @@ html, body {
   background: #444;
 }
 
-/* Editor Container with Line Numbers */
+/* Editor Container */
 #editorContainer {
   flex: 1;
-  display: flex;
   overflow: hidden;
 }
-#lineNumbers {
-  background: #111;
-  padding: 8px;
-  text-align: right;
-  user-select: none;
-  border-right: 1px solid #333;
-  width: 50px;
-  font-family: monospace;
-  font-size: 14px;
-  line-height: 1.4em;
-}
-#codeEditor {
-  flex: 1;
-  background: #111;
-  border: none;
-  padding: 8px;
-  font-family: monospace;
-  font-size: 14px;
-  color: #eee;
-  resize: none;
-  outline: none;
-  line-height: 1.4em;
+
+/* Make CodeMirror fill its container */
+.CodeMirror {
+  height: 100% !important;
 }
 
 /* Preview Pane */
 #previewPane {
   background: #fff;
-}
-#previewHeader {
-  background: #222;
 }
 #previewHeader span {
   color: #eee;
