@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <title>Web Studio IDE</title>
   <link rel="stylesheet" href="style.css">
+  <!-- CodeMirror CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+  <!-- Optional theme (here we use Dracula) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
 </head>
 <body>
   <!-- Top toolbar with file actions -->
@@ -25,7 +29,7 @@
         </div>
       </div>
       <div id="editorContainer">
-        <div id="lineNumbers">1</div>
+        <!-- The CodeMirror editor will replace this textarea -->
         <textarea id="codeEditor" spellcheck="false"></textarea>
       </div>
     </div>
@@ -123,6 +127,14 @@
   
   <!-- Include JSZip from CDN for exporting ZIP files -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  
+  <!-- CodeMirror Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js"></script>
+  
   <!-- Main script -->
   <script src="script.js"></script>
 </body>
