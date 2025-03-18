@@ -3,7 +3,7 @@ A simple Web IDE for Programming with HTML, CSS and JS. It supports a Code Edito
 
 Everything is saved in the localStorage of your Browser.
 
-If you finished your project, you can export single files or all in one as a ZIP-File. You are also able to import Files (via Button ~~or Drag-and-Drop~~).
+If you finished your project, you can export single files or all in one as a ZIP-File. You are also able to import Files (via Button or Drag-and-Drop).
 
 ---------------
 
@@ -11,6 +11,3 @@ Maybe soon Features:
 - No requirement for Cloudflare Script.
 - Color scheme in the Code.
 - Autocompletion.
-
-Fixes to do:
-- Make Drag-and-Drop import work again.
