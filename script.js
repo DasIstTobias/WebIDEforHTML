@@ -4,6 +4,9 @@ let activeFile = 'index.html';
 let maximizedPanel = null;
 let fileOrder = [];
 let dropCounter = 0;
+let currentFileToRename = null;
+let currentFileToDelete = null;
+let currentFileToDownload = null;
 
 /* Initialization: load from localStorage or create defaults */
 function init() {
@@ -54,7 +57,7 @@ function init() {
   updatePreview();
 }
 
-/* Save files object and file order to localStorage */
+/* Save files and order to localStorage */
 function saveFiles() {
   localStorage.setItem('webIDE_files', JSON.stringify(files));
   localStorage.setItem('webIDE_fileOrder', JSON.stringify(fileOrder));
@@ -64,13 +67,11 @@ function saveFiles() {
 function updateTabs() {
   const tabsContainer = document.getElementById('tabs');
   tabsContainer.innerHTML = '';
-  // Render tabs based on fileOrder
   fileOrder.forEach(fileName => {
     if (files[fileName]) {
       createTabElement(fileName);
     }
   });
-  // Add any files not in fileOrder
   for (const fileName in files) {
     if (!fileOrder.includes(fileName)) {
       fileOrder.push(fileName);
@@ -79,82 +80,97 @@ function updateTabs() {
   }
 }
 
-/* Create a tab element for a given file */
+/* Create a tab element with dropdown menu */
 function createTabElement(fileName) {
   const tabsContainer = document.getElementById('tabs');
-  const tab = document.createElement('span');
-  tab.className = 'tab';
-  tab.textContent = fileName;
-  if (fileName === activeFile) {
-    tab.classList.add('active');
-  }
-  tab.setAttribute('draggable', true);
   
-  tab.addEventListener('click', () => {
+  const tabContainer = document.createElement('div');
+  tabContainer.className = 'tab-container';
+  if (fileName === activeFile) {
+    tabContainer.classList.add('active');
+  }
+  
+  // Clicking the file name loads the file
+  const tabFilename = document.createElement('span');
+  tabFilename.className = 'tab-filename';
+  tabFilename.textContent = fileName;
+  tabFilename.addEventListener('click', function(e) {
     saveCurrentFile();
     activeFile = fileName;
     loadFile(activeFile);
     updateTabs();
   });
+  tabContainer.appendChild(tabFilename);
   
-  // Export button for single file
-  const exportBtn = document.createElement('button');
-  exportBtn.textContent = '⤓';
-  exportBtn.className = 'export-btn';
-  exportBtn.addEventListener('click', (e) => {
+  // Menu toggle button
+  const menuBtn = document.createElement('button');
+  menuBtn.className = 'tab-menu-btn';
+  menuBtn.textContent = '⋮';
+  menuBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    exportFile(fileName);
+    const dropdown = tabContainer.querySelector('.dropdown-menu');
+    dropdown.classList.toggle('show');
   });
-  tab.appendChild(exportBtn);
+  tabContainer.appendChild(menuBtn);
   
-  // Delete button for file
-  const deleteBtn = document.createElement('button');
-  deleteBtn.textContent = '✖';
-  deleteBtn.className = 'delete-btn';
-  deleteBtn.addEventListener('click', (e) => {
+  // Dropdown menu container
+  const dropdownMenu = document.createElement('div');
+  dropdownMenu.className = 'dropdown-menu';
+  
+  // Delete action using custom delete modal
+  const deleteItem = document.createElement('div');
+  deleteItem.className = 'dropdown-item';
+  deleteItem.textContent = 'Delete';
+  deleteItem.addEventListener('click', function(e) {
     e.stopPropagation();
-    if (confirm(`Delete "${fileName}"?`)) {
-      delete files[fileName];
-      const index = fileOrder.indexOf(fileName);
-      if (index > -1) {
-        fileOrder.splice(index, 1);
-      }
-      if (activeFile === fileName) {
-        const fileNames = Object.keys(files);
-        activeFile = fileNames.length ? fileNames[0] : 'index.html';
-        if (!files[activeFile]) {
-          files[activeFile] = { name: activeFile, content: '' };
-          fileOrder.push(activeFile);
-        }
-        loadFile(activeFile);
-      }
-      updateTabs();
-      saveFiles();
-      if (fileName === 'index.html' || fileName === 'style.css' || fileName === 'script.js') {
-        updatePreview();
-      }
-    }
+    openDeleteModal(fileName);
+    dropdownMenu.classList.remove('show');
   });
-  tab.appendChild(deleteBtn);
+  dropdownMenu.appendChild(deleteItem);
+  
+  // Download action using custom download modal
+  const downloadItem = document.createElement('div');
+  downloadItem.className = 'dropdown-item';
+  downloadItem.textContent = 'Download';
+  downloadItem.addEventListener('click', function(e) {
+    e.stopPropagation();
+    openDownloadModal(fileName);
+    dropdownMenu.classList.remove('show');
+  });
+  dropdownMenu.appendChild(downloadItem);
+  
+  // Rename action using custom rename modal
+  const renameItem = document.createElement('div');
+  renameItem.className = 'dropdown-item';
+  renameItem.textContent = 'Rename';
+  renameItem.addEventListener('click', function(e) {
+    e.stopPropagation();
+    openRenameModal(fileName);
+    dropdownMenu.classList.remove('show');
+  });
+  dropdownMenu.appendChild(renameItem);
+  
+  tabContainer.appendChild(dropdownMenu);
   
   /* Drag and drop events for reordering tabs */
-  tab.addEventListener('dragstart', (e) => {
+  tabContainer.setAttribute('draggable', true);
+  tabContainer.addEventListener('dragstart', function(e) {
     e.dataTransfer.setData('text/plain', fileName);
-    tab.classList.add('dragging');
+    tabContainer.classList.add('dragging');
   });
-  tab.addEventListener('dragend', (e) => {
-    tab.classList.remove('dragging');
+  tabContainer.addEventListener('dragend', function(e) {
+    tabContainer.classList.remove('dragging');
   });
-  tab.addEventListener('dragover', (e) => {
+  tabContainer.addEventListener('dragover', function(e) {
     e.preventDefault();
-    tab.classList.add('dragover');
+    tabContainer.classList.add('dragover');
   });
-  tab.addEventListener('dragleave', (e) => {
-    tab.classList.remove('dragover');
+  tabContainer.addEventListener('dragleave', function(e) {
+    tabContainer.classList.remove('dragover');
   });
-  tab.addEventListener('drop', (e) => {
+  tabContainer.addEventListener('drop', function(e) {
     e.preventDefault();
-    tab.classList.remove('dragover');
+    tabContainer.classList.remove('dragover');
     const draggedFile = e.dataTransfer.getData('text/plain');
     if (draggedFile && draggedFile !== fileName) {
       const draggedIndex = fileOrder.indexOf(draggedFile);
@@ -168,8 +184,15 @@ function createTabElement(fileName) {
     }
   });
   
-  tabsContainer.appendChild(tab);
+  tabsContainer.appendChild(tabContainer);
 }
+
+/* Close any open dropdown menus when clicking outside */
+document.addEventListener('click', function(e) {
+  document.querySelectorAll('.dropdown-menu.show').forEach(menu => {
+    menu.classList.remove('show');
+  });
+});
 
 /* Load file content into the editor */
 function loadFile(fileName) {
@@ -179,7 +202,7 @@ function loadFile(fileName) {
   updateLineNumbers();
 }
 
-/* Save the current file content from the editor */
+/* Save the current file content */
 function saveCurrentFile() {
   const codeEditor = document.getElementById('codeEditor');
   if (activeFile in files) {
@@ -188,7 +211,7 @@ function saveCurrentFile() {
   }
 }
 
-/* Update line numbers based on the number of lines in the editor */
+/* Update line numbers based on the code editor */
 function updateLineNumbers() {
   const codeEditor = document.getElementById('codeEditor');
   const lineNumbers = document.getElementById('lineNumbers');
@@ -200,7 +223,7 @@ function updateLineNumbers() {
   lineNumbers.innerHTML = numbersHtml;
 }
 
-/* Event listener: update line numbers, save file, and refresh preview if needed */
+/* Editor events */
 document.getElementById('codeEditor').addEventListener('input', function() {
   updateLineNumbers();
   if (activeFile in files) {
@@ -211,17 +234,14 @@ document.getElementById('codeEditor').addEventListener('input', function() {
     }
   }
 });
-
-/* Sync scrolling for line numbers and code editor */
 document.getElementById('codeEditor').addEventListener('scroll', function() {
   document.getElementById('lineNumbers').scrollTop = this.scrollTop;
 });
 
-/* Update the live preview iframe by creating Blob URLs for dependencies */
+/* Update the live preview iframe */
 function updatePreview() {
   saveCurrentFile();
   let blobUrls = {};
-  // Create Blob URLs for all files except index.html
   for (const fileName in files) {
     if (fileName !== 'index.html') {
       let mime;
@@ -233,55 +253,102 @@ function updatePreview() {
       blobUrls[fileName] = URL.createObjectURL(blob);
     }
   }
-  // Replace href and src references in index.html with the corresponding Blob URLs
   let htmlContent = files['index.html'].content;
   htmlContent = htmlContent.replace(/href="([^"]+)"/g, function(match, p1) {
-    if (blobUrls[p1]) {
-      return 'href="' + blobUrls[p1] + '"';
-    }
-    return match;
+    return blobUrls[p1] ? 'href="' + blobUrls[p1] + '"' : match;
   });
   htmlContent = htmlContent.replace(/src="([^"]+)"/g, function(match, p1) {
-    if (blobUrls[p1]) {
-      return 'src="' + blobUrls[p1] + '"';
-    }
-    return match;
+    return blobUrls[p1] ? 'src="' + blobUrls[p1] + '"' : match;
   });
   
-  // Inject a script to override console.log so logs are passed to the parent window
   const injection = `<script>(function(){var oldLog = console.log; console.log = function(){oldLog.apply(console, arguments); window.parent.postMessage({type:'console', data:Array.from(arguments)}, '*');};})()<\/script>`;
   htmlContent = htmlContent.replace("<head>", "<head>" + injection);
   
-  // Write the updated HTML content into the preview iframe's document
   const iframe = document.getElementById('previewFrame');
   iframe.contentDocument.open();
   iframe.contentDocument.write(htmlContent);
   iframe.contentDocument.close();
 }
 
-/* New File: prompt for file name and create a new empty file */
-document.getElementById('newFileBtn').addEventListener('click', function() {
-  const fileName = prompt('Enter new file name (with extension):');
-  if (fileName) {
-    if (files[fileName]) {
-      alert('File already exists.');
-    } else {
-      files[fileName] = { name: fileName, content: '' };
-      fileOrder.push(fileName);
-      activeFile = fileName;
-      updateTabs();
-      loadFile(activeFile);
-      saveFiles();
-    }
-  }
-});
+/* Open Create File Modal */
+function openCreateFileModal() {
+  const modal = document.getElementById('createFileModal');
+  const input = document.getElementById('createFileInput');
+  input.value = "";
+  modal.classList.remove('hidden');
+  input.focus();
+}
 
-/* Import Files via button: trigger hidden file input */
+/* Open Download File Modal */
+function openDownloadModal(fileName) {
+  currentFileToDownload = fileName;
+  const modal = document.getElementById('downloadModal');
+  const input = document.getElementById('downloadInput');
+  input.value = fileName;
+  modal.classList.remove('hidden');
+  input.focus();
+}
+
+/* Open Zip Export Modal */
+function openZipModal() {
+  const modal = document.getElementById('zipModal');
+  const input = document.getElementById('zipInput');
+  if (!input.value) {
+    input.value = "project.zip";
+  }
+  modal.classList.remove('hidden');
+  input.focus();
+}
+
+/* Open Rename Modal */
+function openRenameModal(fileName) {
+  currentFileToRename = fileName;
+  const modal = document.getElementById('renameModal');
+  const input = document.getElementById('renameInput');
+  input.value = fileName;
+  modal.classList.remove('hidden');
+  input.focus();
+}
+
+/* Open Delete Confirmation Modal */
+function openDeleteModal(fileName) {
+  currentFileToDelete = fileName;
+  const modal = document.getElementById('deleteModal');
+  const msg = document.getElementById('deleteModalMessage');
+  msg.textContent = `Are you sure you want to delete "${fileName}"?`;
+  modal.classList.remove('hidden');
+}
+
+/* Export a single file with an optional download name */
+function exportFile(fileName, downloadName) {
+  const file = files[fileName];
+  const blob = new Blob([file.content], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = downloadName || fileName;
+  a.click();
+}
+
+/* Export all files as a ZIP file */
+function exportZipFile(zipName) {
+  const zip = new JSZip();
+  for (const fileName in files) {
+    zip.file(fileName, files[fileName].content);
+  }
+  zip.generateAsync({ type: "blob" })
+    .then(function(content) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(content);
+      a.download = zipName;
+      a.click();
+    });
+}
+
+/* Event listeners for New File, Import, and Export All */
+document.getElementById('newFileBtn').addEventListener('click', openCreateFileModal);
 document.getElementById('importBtn').addEventListener('click', function() {
   document.getElementById('importInput').click();
 });
-
-/* Handle file import from file input */
 document.getElementById('importInput').addEventListener('change', function(event) {
   const fileList = event.target.files;
   for (let i = 0; i < fileList.length; i++) {
@@ -301,97 +368,148 @@ document.getElementById('importInput').addEventListener('change', function(event
     reader.readAsText(file);
   }
 });
+document.getElementById('exportAllBtn').addEventListener('click', openZipModal);
 
-/* Drag-and-Drop File Import */
-const dropOverlay = document.getElementById('dropOverlay');
-document.addEventListener('dragenter', function(e) {
-  // Only show overlay if files are being dragged (not internal tabs)
-  if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
-    dropCounter++;
-    dropOverlay.classList.add('active');
-  }
+/* Event listeners for Create File Modal */
+document.getElementById('createFileCancelBtn').addEventListener('click', function() {
+  document.getElementById('createFileModal').classList.add('hidden');
 });
-document.addEventListener('dragleave', function(e) {
-  if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
-    dropCounter--;
-    if (dropCounter === 0) {
-      dropOverlay.classList.remove('active');
+document.getElementById('createFileConfirmBtn').addEventListener('click', function() {
+  const input = document.getElementById('createFileInput');
+  const fileName = input.value.trim();
+  if (!fileName) {
+    alert("File name cannot be empty.");
+    return;
+  }
+  if (files[fileName]) {
+    alert("File already exists.");
+    return;
+  }
+  files[fileName] = { name: fileName, content: "" };
+  fileOrder.push(fileName);
+  activeFile = fileName;
+  updateTabs();
+  loadFile(activeFile);
+  saveFiles();
+  document.getElementById('createFileModal').classList.add('hidden');
+});
+
+/* Event listeners for Download File Modal */
+document.getElementById('downloadCancelBtn').addEventListener('click', function() {
+  document.getElementById('downloadModal').classList.add('hidden');
+});
+document.getElementById('downloadConfirmBtn').addEventListener('click', function() {
+  const input = document.getElementById('downloadInput');
+  const newName = input.value.trim();
+  if (!newName) {
+    alert("File name cannot be empty.");
+    return;
+  }
+  exportFile(currentFileToDownload, newName);
+  document.getElementById('downloadModal').classList.add('hidden');
+});
+
+/* Event listeners for Export ZIP Modal */
+document.getElementById('zipCancelBtn').addEventListener('click', function() {
+  document.getElementById('zipModal').classList.add('hidden');
+});
+document.getElementById('zipConfirmBtn').addEventListener('click', function() {
+  const input = document.getElementById('zipInput');
+  let zipName = input.value.trim();
+  if (!zipName) {
+    alert("ZIP file name cannot be empty.");
+    return;
+  }
+  if (!zipName.toLowerCase().endsWith('.zip')) {
+    zipName += '.zip';
+  }
+  exportZipFile(zipName);
+  document.getElementById('zipModal').classList.add('hidden');
+});
+
+/* Event listeners for Rename Modal */
+document.getElementById('renameCancelBtn').addEventListener('click', function() {
+  document.getElementById('renameModal').classList.add('hidden');
+});
+document.getElementById('renameSaveBtn').addEventListener('click', function() {
+  const input = document.getElementById('renameInput');
+  const newName = input.value.trim();
+  if (!newName) {
+    alert("File name cannot be empty.");
+    return;
+  }
+  if (newName === currentFileToRename) {
+    document.getElementById('renameModal').classList.add('hidden');
+    return;
+  }
+  if (files[newName]) {
+    alert("A file with that name already exists.");
+    return;
+  }
+  files[newName] = { name: newName, content: files[currentFileToRename].content };
+  delete files[currentFileToRename];
+  const index = fileOrder.indexOf(currentFileToRename);
+  if (index > -1) {
+    fileOrder[index] = newName;
+  }
+  if (activeFile === currentFileToRename) {
+    activeFile = newName;
+  }
+  updateTabs();
+  loadFile(activeFile);
+  saveFiles();
+  if (
+    newName === 'index.html' || newName === 'style.css' || newName === 'script.js' ||
+    currentFileToRename === 'index.html' || currentFileToRename === 'style.css' || currentFileToRename === 'script.js'
+  ) {
+    updatePreview();
+  }
+  document.getElementById('renameModal').classList.add('hidden');
+});
+
+/* Event listeners for Delete Confirmation Modal */
+document.getElementById('deleteCancelBtn').addEventListener('click', function() {
+  document.getElementById('deleteModal').classList.add('hidden');
+});
+document.getElementById('deleteConfirmBtn').addEventListener('click', function() {
+  if (currentFileToDelete) {
+    let fileName = currentFileToDelete;
+    delete files[fileName];
+    const index = fileOrder.indexOf(fileName);
+    if (index > -1) {
+      fileOrder.splice(index, 1);
     }
-  }
-});
-document.addEventListener('dragover', function(e) {
-  // Only prevent default for file drags
-  if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
-    e.preventDefault();
-  }
-});
-document.addEventListener('drop', function(e) {
-  if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
-    e.preventDefault();
-    dropCounter = 0;
-    dropOverlay.classList.remove('active');
-    if (e.dataTransfer && e.dataTransfer.files.length > 0) {
-      const fileList = e.dataTransfer.files;
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          files[file.name] = { name: file.name, content: e.target.result };
-          if (!fileOrder.includes(file.name)) {
-            fileOrder.push(file.name);
-          }
-          updateTabs();
-          saveFiles();
-          if (file.name === 'index.html' || file.name === 'style.css' || file.name === 'script.js') {
-            updatePreview();
-          }
-        };
-        reader.readAsText(file);
+    if (activeFile === fileName) {
+      const fileNames = Object.keys(files);
+      activeFile = fileNames.length ? fileNames[0] : 'index.html';
+      if (!files[activeFile]) {
+        files[activeFile] = { name: activeFile, content: '' };
+        fileOrder.push(activeFile);
       }
+      loadFile(activeFile);
     }
+    updateTabs();
+    saveFiles();
+    if (fileName === 'index.html' || fileName === 'style.css' || fileName === 'script.js') {
+      updatePreview();
+    }
+    document.getElementById('deleteModal').classList.add('hidden');
   }
 });
 
-/* Export a single file by creating a Blob download link */
-function exportFile(fileName) {
-  const file = files[fileName];
-  const blob = new Blob([file.content], { type: 'text/plain' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = fileName;
-  a.click();
-}
-
-/* Export all files as a ZIP file using JSZip */
-document.getElementById('exportAllBtn').addEventListener('click', function() {
-  const zip = new JSZip();
-  for (const fileName in files) {
-    zip.file(fileName, files[fileName].content);
-  }
-  zip.generateAsync({ type: "blob" })
-    .then(function(content) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(content);
-      a.download = "project.zip";
-      a.click();
-    });
-});
-
-/* Maximize panel buttons: toggle the chosen panel to full width with animations */
+/* Maximize panel buttons */
 document.getElementById('maximizeLeftBtn').addEventListener('click', function() {
   toggleMaximize('left');
 });
 document.getElementById('maximizeRightBtn').addEventListener('click', function() {
   toggleMaximize('right');
 });
-
 function toggleMaximize(panel) {
   const editorPane = document.getElementById('editorPane');
   const previewPane = document.getElementById('previewPane');
   const maximizeLeftBtn = document.getElementById('maximizeLeftBtn');
   const maximizeRightBtn = document.getElementById('maximizeRightBtn');
   if (maximizedPanel === panel) {
-    // Restore normal view
     editorPane.style.flex = "1";
     previewPane.style.flex = "1";
     maximizedPanel = null;
@@ -414,7 +532,7 @@ function toggleMaximize(panel) {
   }
 }
 
-/* Toggle Console Panel with text change to 'Show Console' / 'Hide Console' */
+/* Toggle Console Panel */
 document.getElementById('toggleConsoleBtn').addEventListener('click', function() {
   const consolePanel = document.getElementById('consolePanel');
   const toggleConsoleBtn = document.getElementById('toggleConsoleBtn');
@@ -426,13 +544,9 @@ document.getElementById('toggleConsoleBtn').addEventListener('click', function()
     toggleConsoleBtn.textContent = "Show Console";
   }
 });
-
-/* Clear Console using bottom toolbar button */
 document.getElementById('clearConsoleBtn').addEventListener('click', function() {
   document.getElementById('consoleOutput').innerHTML = '';
 });
-
-/* Manual Refresh Preview Button */
 document.getElementById('refreshPreviewBtn').addEventListener('click', function() {
   updatePreview();
 });
@@ -447,6 +561,51 @@ window.addEventListener('message', function(event) {
   }
 });
 
-/* Save the current file before the window unloads */
+/* Drag-and-Drop File Import */
+document.addEventListener('dragenter', function(e) {
+  e.preventDefault();
+  dropCounter++;
+  let dropOverlay = document.getElementById('dropOverlay');
+  dropOverlay.classList.remove('hidden');
+  dropOverlay.classList.add('active');
+});
+document.addEventListener('dragover', function(e) {
+  e.preventDefault();
+});
+document.addEventListener('dragleave', function(e) {
+  dropCounter--;
+  if (dropCounter <= 0) {
+    let dropOverlay = document.getElementById('dropOverlay');
+    dropOverlay.classList.remove('active');
+    dropOverlay.classList.add('hidden');
+    dropCounter = 0;
+  }
+});
+document.addEventListener('drop', function(e) {
+  e.preventDefault();
+  dropCounter = 0;
+  let dropOverlay = document.getElementById('dropOverlay');
+  dropOverlay.classList.remove('active');
+  dropOverlay.classList.add('hidden');
+  const fileList = e.dataTransfer.files;
+  for (let i = 0; i < fileList.length; i++) {
+    const file = fileList[i];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      files[file.name] = { name: file.name, content: e.target.result };
+      if (!fileOrder.includes(file.name)) {
+        fileOrder.push(file.name);
+      }
+      updateTabs();
+      saveFiles();
+      if (file.name === 'index.html' || file.name === 'style.css' || file.name === 'script.js') {
+        updatePreview();
+      }
+    };
+    reader.readAsText(file);
+  }
+});
+
+/* Save current file before the window unloads */
 window.addEventListener('beforeunload', saveCurrentFile);
 window.addEventListener('load', init);
