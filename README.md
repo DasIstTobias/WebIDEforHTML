@@ -11,3 +11,5 @@ Maybe soon Features:
 - No requirement for Cloudflare Script.
 - Rename Files.
 - Name for the exported ZIP.
+- Color scheme in the Code.
+- Autocompletion.
