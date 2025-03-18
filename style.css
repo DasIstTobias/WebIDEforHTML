@@ -217,11 +217,13 @@ html, body {
 /* Drop Overlay for Drag-and-Drop File Import */
 #dropOverlay {
   position: fixed;
-  top: 0;
+  top: 20%;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0,0,0,0.5);
+  border-radius: 20pt;
+  border: 12px dashed rgba(50,50,50,0.5);
   color: #fff;
   font-size: 24px;
   display: flex;
