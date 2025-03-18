@@ -9,7 +9,5 @@ If you finished your project, you can export single files or all in one as a ZIP
 
 Maybe soon Features:
 - No requirement for Cloudflare Script.
-- Rename Files.
-- Name for the exported ZIP.
 - Color scheme in the Code.
 - Autocompletion.
