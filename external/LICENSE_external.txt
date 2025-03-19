@@ -1,0 +1,12 @@
+Everything in this folder ( /external ) is not programmed by myself, and is only here so that you can use the Programm Offline.
+I am not affiliated with the code in this ( /external ) folder and I am NOT its author.
+The code in this folder was downloaded from the following sources:
+
+- codemirror.min.css  ------------>  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css
+- dracula.min.css  --------------->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css
+- jszip.min.js  ------------------>  https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js
+- codemirror.min.js  ------------->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js
+- xml.min.js  -------------------->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/xml/xml.min.js
+- javascript/javascript.min.js  -->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/javascript/javascript.min.js
+- css.min.js  -------------------->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/css/css.min.js
+- htmlmixed.min.js  -------------->  https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/htmlmixed/htmlmixed.min.js
