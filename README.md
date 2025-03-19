@@ -8,7 +8,6 @@ If you finished your project, you can export single files or all in one as a ZIP
 ---------------
 
 Maybe soon Features:
-- No requirement for Cloudflare-cdnjs Scripts.
 - Autocompletion.
 
 ---------------
