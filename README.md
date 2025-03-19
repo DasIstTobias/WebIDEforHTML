@@ -10,3 +10,7 @@ If you finished your project, you can export single files or all in one as a ZIP
 Maybe soon Features:
 - No requirement for Cloudflare-cdnjs Scripts.
 - Autocompletion.
+
+---------------
+
+The code in the “external” folder was NOT written by me and I am NOT the author of the code in the “external” folder. For more information see external/LICENSE_external.txt .
