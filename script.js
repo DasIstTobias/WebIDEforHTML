@@ -634,33 +634,6 @@ document.addEventListener('drop', function(e) {
 window.addEventListener('beforeunload', saveCurrentFile);
 window.addEventListener('load', init);
 
-// ─── Vertical resizing ───────────────────────────────────────────────────────
-const verticalResizer = document.getElementById('verticalResizer');
-let isResizingVert = false;
-
-verticalResizer.addEventListener('mousedown', () => {
-  isResizingVert = true;
-  document.body.style.userSelect = 'none';
-});
-
-document.addEventListener('mousemove', e => {
-  if (!isResizingVert) return;
-  const container = document.getElementById('container');
-  const rect = container.getBoundingClientRect();
-  let pct = (e.clientX - rect.left) / rect.width * 100;
-  pct = Math.min(Math.max(pct, 20), 80);
-  if (Math.abs(pct - 50) < 2) pct = 50;  // snapping at midpoint
-  document.getElementById('editorPane').style.flex = `0 0 ${pct}%`;
-  document.getElementById('previewPane').style.flex = `0 0 ${100 - pct}%`;
-});
-
-document.addEventListener('mouseup', () => {
-  if (isResizingVert) {
-    isResizingVert = false;
-    document.body.style.userSelect = '';
-  }
-});
-
 // ─── Horizontal resizing for console ────────────────────────────────────────
 const horizontalResizer = document.getElementById('horizontalResizer');
 let isResizingHoriz = false;
@@ -685,4 +658,50 @@ document.addEventListener('mouseup', () => {
     isResizingHoriz = false;
     document.body.style.userSelect = '';
   }
+});
+
+// ─── Improved vertical splitter ───────────────────────────────────────────
+const verticalResizer = document.getElementById('verticalResizer');
+let isResizingVert = false;
+
+// Begin drag: flag + disable flex transitions
+verticalResizer.addEventListener('mousedown', () => {
+  isResizingVert = true;
+  document.body.style.userSelect = 'none';
+  const ed = document.getElementById('editorPane');
+  const pr = document.getElementById('previewPane');
+  ed.style.transition = 'none';
+  pr.style.transition = 'none';
+});
+
+// Dragging: recalc %
+document.addEventListener('mousemove', e => {
+  if (!isResizingVert) return;
+  const container = document.getElementById('container');
+  const ed = document.getElementById('editorPane');
+  const pr = document.getElementById('previewPane');
+  const rect = container.getBoundingClientRect();
+  let pct = (e.clientX - rect.left) / rect.width * 100;
+  pct = Math.min(Math.max(pct, 20), 80);
+  if (Math.abs(pct - 50) < 2) pct = 50;  // snap at midpoint
+  // Apply flex-basis and move the bar
+  ed.style.flex = `0 0 ${pct}%`;
+  pr.style.flex = `0 0 ${100 - pct}%`;
+  verticalResizer.style.left = `${pct}%`;
+});
+
+// End drag: clear flag + restore transitions
+document.addEventListener('mouseup', () => {
+  if (!isResizingVert) return;
+  isResizingVert = false;
+  document.body.style.userSelect = '';
+  const ed = document.getElementById('editorPane');
+  const pr = document.getElementById('previewPane');
+  ed.style.transition = '';
+  pr.style.transition = '';
+});
+
+// On load, place the bar at 50%
+window.addEventListener('load', () => {
+  verticalResizer.style.left = '50%';
 });

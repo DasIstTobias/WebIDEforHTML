@@ -271,27 +271,36 @@ html, body {
   background: #444;
 }
 
+/* Make container a positioning context for the absolute resizer */
+#container {
+  position: relative;
+}
+
 /* Resizer visuals */
 .resizer {
   background: rgba(255,255,255,0.1);
   z-index: 1001;
 }
+
 .resizer:hover {
   background: rgba(255,255,255,0.3);
 }
 
-/* Vertical drag bar */
+/* Vertical drag bar (now absolutely positioned) */
 .resizer.vertical {
+  position: absolute;
+  top: 0;
+  bottom: 0;
   width: 5px;
   cursor: col-resize;
 }
 
 /* Horizontal drag bar inside console */
 .resizer.horizontal {
-  height: 5px;
-  cursor: row-resize;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
+  height: 5px;
+  cursor: row-resize;
 }
