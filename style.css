@@ -1,3 +1,8 @@
+/* ── avoid overflow by including borders/padding in element sizes ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 /* Global Styles */
 html, body {
   margin: 0;
@@ -6,6 +11,7 @@ html, body {
   background-color: #000;
   color: #eee;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;    /* hide any stray horizontal scrollbar */
 }
 
 /* Top Toolbar */
@@ -55,6 +61,7 @@ html, body {
 #container {
   display: flex;
   height: calc(100% - 100px); /* Accounts for top & bottom toolbars */
+  overflow: hidden;           /* clip any horizontal overflow from child panes */
 }
 
 /* Editor and Preview Panes */
