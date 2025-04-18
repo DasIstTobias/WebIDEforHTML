@@ -1,5 +1,5 @@
 # Web IDE for HTML
-A simple Web IDE for Programming with HTML, CSS and JS. It supports a Code Editor with syntax highlighting, a Javascript Console and a live Preview of the Page.
+A simple Web IDE for Programming with HTML, CSS and JS. It supports a Code Editor with syntax highlighting, a Javascript Console and a live Preview of the Page. These individual parts of the Web IDE can be resized to suit your needs.
 
 Everything is saved in the localStorage of your Browser.
 
