@@ -8,6 +8,10 @@ let currentFileToRename = null;
 let currentFileToDelete = null;
 let currentFileToDownload = null;
 let editor; // CodeMirror editor instance
+let prevEditorSize = null;
+let prevPreviewSize = null;
+let prevConsoleSize = null;
+
 
 /* Initialization: load from localStorage or create defaults */
 function init() {
@@ -513,24 +517,32 @@ function toggleMaximize(panel) {
   const maximizeLeftBtn = document.getElementById('maximizeLeftBtn');
   const maximizeRightBtn = document.getElementById('maximizeRightBtn');
   if (maximizedPanel === panel) {
-    editorPane.style.flex = "1";
-    previewPane.style.flex = "1";
+    // Restore the sizes you dragged to before maximizing
+    editorPane.style.flex  = prevEditorSize  || "1";
+    previewPane.style.flex = prevPreviewSize || "1";
     maximizedPanel = null;
-    maximizeLeftBtn.textContent = "Maximize Editor";
+    maximizeLeftBtn.textContent  = "Maximize Editor";
     maximizeRightBtn.textContent = "Maximize Preview";
+    
   } else {
     if (panel === 'left') {
-      editorPane.style.flex = "1 1 100%";
+      // Save your current drag sizes, then maximize
+      prevEditorSize  = editorPane.style.flex;
+      prevPreviewSize = previewPane.style.flex;
+      editorPane.style.flex  = "1 1 100%";
       previewPane.style.flex = "0";
       maximizedPanel = panel;
-      maximizeLeftBtn.textContent = "Minimize Editor";
+      maximizeLeftBtn.textContent  = "Minimize Editor";
       maximizeRightBtn.textContent = "Maximize Preview";
+    
     } else if (panel === 'right') {
+      prevEditorSize  = editorPane.style.flex;
+      prevPreviewSize = previewPane.style.flex;
       previewPane.style.flex = "1 1 100%";
-      editorPane.style.flex = "0";
+      editorPane.style.flex  = "0";
       maximizedPanel = panel;
       maximizeRightBtn.textContent = "Minimize Preview";
-      maximizeLeftBtn.textContent = "Maximize Editor";
+      maximizeLeftBtn.textContent  = "Maximize Editor";
     }
   }
 }
@@ -621,3 +633,56 @@ document.addEventListener('drop', function(e) {
 /* Save current file before the window unloads */
 window.addEventListener('beforeunload', saveCurrentFile);
 window.addEventListener('load', init);
+
+// ─── Vertical resizing ───────────────────────────────────────────────────────
+const verticalResizer = document.getElementById('verticalResizer');
+let isResizingVert = false;
+
+verticalResizer.addEventListener('mousedown', () => {
+  isResizingVert = true;
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!isResizingVert) return;
+  const container = document.getElementById('container');
+  const rect = container.getBoundingClientRect();
+  let pct = (e.clientX - rect.left) / rect.width * 100;
+  pct = Math.min(Math.max(pct, 20), 80);
+  if (Math.abs(pct - 50) < 2) pct = 50;  // snapping at midpoint
+  document.getElementById('editorPane').style.flex = `0 0 ${pct}%`;
+  document.getElementById('previewPane').style.flex = `0 0 ${100 - pct}%`;
+});
+
+document.addEventListener('mouseup', () => {
+  if (isResizingVert) {
+    isResizingVert = false;
+    document.body.style.userSelect = '';
+  }
+});
+
+// ─── Horizontal resizing for console ────────────────────────────────────────
+const horizontalResizer = document.getElementById('horizontalResizer');
+let isResizingHoriz = false;
+
+horizontalResizer.addEventListener('mousedown', () => {
+  isResizingHoriz = true;
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', e => {
+  if (!isResizingHoriz) return;
+  const btHeight = document.getElementById('bottomToolbar').offsetHeight;
+  let consolePx = window.innerHeight - e.clientY - btHeight;
+  let pct = consolePx / window.innerHeight * 100;
+  pct = Math.min(Math.max(pct, 20), 70);
+  if (Math.abs(pct - 33.33) < 2) pct = 33.33;  // snap to default
+  document.getElementById('consolePanel').style.height = `${pct}vh`;
+});
+
+document.addEventListener('mouseup', () => {
+  if (isResizingHoriz) {
+    isResizingHoriz = false;
+    document.body.style.userSelect = '';
+  }
+});
